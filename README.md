@@ -1,14 +1,10 @@
-# MongoDB QueryString Parser
+# DynamoDB QueryString Parser
 
-[![Build status](https://app.wercker.com/status/b33b844c0ab10d56c318e116e587e2fa/s "wercker status")](https://app.wercker.com/project/bykey/b33b844c0ab10d56c318e116e587e2fa)
-[![Codacy grade](https://img.shields.io/codacy/grade/782d0dc482ea4033892f99f968090b35.svg "Codacy grade")](https://www.codacy.com/app/DNT/node-mongo-querystring)
-[![Codacy coverage](https://img.shields.io/codacy/coverage/782d0dc482ea4033892f99f968090b35.svg "Codacy coverage")](https://www.codacy.com/app/DNT/node-mongo-querystring)
-[![NPM downloads](https://img.shields.io/npm/dm/mongo-querystring.svg "NPM downloads")](https://www.npmjs.com/package/mongo-querystring)
-[![NPM version](https://img.shields.io/npm/v/mongo-querystring.svg "NPM version")](https://www.npmjs.com/package/mongo-querystring)
-[![Node version](https://img.shields.io/node/v/mongo-querystring.svg "Node version")](https://www.npmjs.com/package/mongo-querystring)
-[![Dependency status](https://img.shields.io/david/Turistforeningen/node-mongo-querystring.svg "Dependency status")](https://david-dm.org/Turistforeningen/node-mongo-querystring)
+This project is based on the project MongoDB QueryString Parser from Hans Kristian Flaatten <hans@starefossen.com> https://github.com/Turistforeningen/node-mongo-querystring.
 
-Accept MongoDB query parameters through URI queries safe and easy. This is
+Adapted for DynamoDB by Alejandro Alvarenga <aalvarenga@jnrcorp.com>
+
+Accept DynamoDB query parameters through URI queries safe and easy. This is
 useful when building an API and accepting various user specificed queries.
 
 ## Features
@@ -74,16 +70,16 @@ useful when building an API and accepting various user specificed queries.
 ## Install
 
 ```
-npm install mongo-querystring --save
+npm install dynamo-querystring --save
 ```
 
 ## API
 
 ```javascript
-var MongoQS = require('mongo-querystring');
+var DynamoQS = require('dynamo-querystring');
 ```
 
-### new MongoQS(`object` options)
+### new DynamoQS(`object` options)
 
 * `Array` ops - list of supported operators (default: `['!', '^', '$', '~', '>', '<', '$in']`)
 * `object` alias - query param aliases (default: `{}`)
@@ -103,7 +99,7 @@ var MongoQS = require('mongo-querystring');
 * `after` - modified since query
 
 ```javascript
-var qs = new MongoQS({
+var qs = new DynamoQS({
   custom: {
     bbox: 'geojson',        // your geometry field
     near: 'geojson',        // your geometry field
@@ -119,7 +115,7 @@ that your users will be using and a function which takes the result query object
 and the value for query parameter.
 
 ```javascript
-var qs = new MongoQS({
+var qs = new DynamoQS({
   custom: {
     urlQueryParamName: function(query, input) {
       // do some processing of input value
@@ -143,19 +139,3 @@ mongo.collection('mycol').find(query, field).toArray(function(err, documents) {
   // matching documents
 });
 ```
-
-### Collaborators
-
-Individuals making significant and valuable contributions are made Collaborators
-and given commit-access to the project. These individuals are identified by the
-existing Collaborators and their addition as Collaborators is discussed as a
-pull request to this project's README.md.
-
-Note: If you make a significant contribution and are not considered for
-commit-access log an issue or contact one of the Collaborators directly.
-
-* Andy Klimczak - @andyklimczak
-* Hans Kristian Flaatten - @Starefossen
-* Edward Knowles - @eknowles
-
-## [MIT Licensed](https://raw.githubusercontent.com/Turistforeningen/node-mongo-querystring/master/LICENSE)

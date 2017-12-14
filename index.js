@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function MongoQS(options) {
+module.exports = function DynamoQS(options) {
   const opts = options || {};
 
   this.ops = opts.ops || ['!', '^', '$', '~', '>', '<', '$in'];

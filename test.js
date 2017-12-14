@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('assert');
-const MongoQS = require('./');
+const DynamoQS = require('./');
 
 const querystring = require('querystring');
 const qs = require('qs'); // eslint-disable-line import/no-extraneous-dependencies
@@ -10,7 +10,7 @@ let mqs = null;
 let query = null;
 
 beforeEach(() => {
-  mqs = new MongoQS();
+  mqs = new DynamoQS();
   query = {};
 });
 
@@ -842,7 +842,7 @@ describe('parse()', () => {
 
   describe('aliasing', () => {
     it('returns query for aliased key', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         alias: {
           foo: 'bar',
         },
@@ -856,7 +856,7 @@ describe('parse()', () => {
     });
 
     it('returns multiple queries for aliased keys', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         alias: {
           foo: 'bar',
           baz: 'bax',
@@ -875,7 +875,7 @@ describe('parse()', () => {
 
   describe('blacklisting', () => {
     it('does not return query for blacklisted key', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         blacklist: {
           foo: true,
         },
@@ -890,7 +890,7 @@ describe('parse()', () => {
     });
 
     it('does not return multiple query for blacklisted keys', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         blacklist: {
           foo: true,
           bar: true,
@@ -909,7 +909,7 @@ describe('parse()', () => {
 
   describe('whitelisting', () => {
     it('returns query only for whitelisted key', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         whitelist: {
           foo: true,
         },
@@ -925,7 +925,7 @@ describe('parse()', () => {
     });
 
     it('returns multiple queries for whitelisted keys', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         whitelist: {
           foo: true,
           bar: true,
@@ -945,7 +945,7 @@ describe('parse()', () => {
 
   describe('custom', () => {
     it('returns custom bbox query', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         custom: {
           bbox: 'geojson',
         },
@@ -966,7 +966,7 @@ describe('parse()', () => {
     });
 
     it('returns custom near query', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         custom: {
           near: 'geojson',
         },
@@ -987,7 +987,7 @@ describe('parse()', () => {
     });
 
     it('returns custom after query', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         custom: {
           after: 'endret',
         },
@@ -1002,7 +1002,7 @@ describe('parse()', () => {
     });
 
     it('returns custom before query', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         custom: {
           before: 'endret',
         },
@@ -1017,7 +1017,7 @@ describe('parse()', () => {
     });
 
     it('returns custom between query', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         custom: {
           between: 'endret',
         },
@@ -1033,7 +1033,7 @@ describe('parse()', () => {
     });
 
     it('returns custom function query', () => {
-      mqs = new MongoQS({
+      mqs = new DynamoQS({
         custom: {
           assigned: (queryObject, inputValue) => {
             queryObject['assigned.users._id'] = {
