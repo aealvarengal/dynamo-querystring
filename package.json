@@ -1,6 +1,5 @@
 {
   "name": "dynamo-querystring",
-  "version": null,
   "description": "Parse and pass URL queries to DynamoDB query",
   "main": "index.js",
   "files": [
@@ -21,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.jnrcloud.com/partners/node-dynamo-querystring.git"
+    "url": "https://github.com/aealvarengal/dynamo-querystring.git"
   },
   "keywords": [
     "query",
@@ -32,9 +31,9 @@
     "dynamo",
     "dynamodb"
   ],
-  "author": "Alejandro Alvarenga <aalvarenga@jnrcorp.com>",
+  "author": "Alejandro Alvarenga <aealvarenga@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/Turistforeningen/node-mongo-querystring#readme",
+  "homepage": "https://github.com/aealvarengal/dynamo-querystring",
   "devDependencies": {
     "JSONStream": "^1.1.1",
     "codacy-coverage": "^2.0.0",
@@ -45,7 +44,6 @@
     "greenkeeper-postpublish": "^1.0.0",
     "istanbul": "^0.4.3",
     "mocha": "^3.0.0",
-    "mongodb": "^2.1.18",
     "nsp": "^2.4.0",
     "qs": "^6.2.0",
     "semantic-release": "^4.3.5",
@@ -53,5 +51,10 @@
   },
   "engines": {
     "node": ">=4.0.0"
-  }
+  },
+  "version": "1.0.0",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {}
 }
