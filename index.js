@@ -3,7 +3,7 @@
 module.exports = function DynamoQS(options) {
   const opts = options || {};
 
-  this.ops = opts.ops || ['!', '^', '$', '~', '>', '<', '$in'];
+  this.ops = opts.ops || ['!', '^', '$', '>', '<', 'in', 'null'];
   this.alias = opts.alias || {};
   this.blacklist = opts.blacklist || {};
   this.whitelist = opts.whitelist || {};
@@ -19,14 +19,6 @@ module.exports = function DynamoQS(options) {
   this.valRegex = opts.valRegex || /[^a-zæøå0-9-_.* ]/i;
   this.arrRegex = opts.arrRegex || /^[a-zæøå0-9-_.]+(\[])?$/i;
 
-  if (this.custom.bbox) {
-    this.custom.bbox = this.customBBOX(this.custom.bbox);
-  }
-
-  if (this.custom.near) {
-    this.custom.near = this.customNear(this.custom.near);
-  }
-
   if (this.custom.after) {
     this.custom.after = this.customAfter(this.custom.after);
   }
@@ -41,63 +33,6 @@ module.exports = function DynamoQS(options) {
 
 
   return this;
-};
-
-module.exports.prototype.customBBOX = field => (query, bbox) => {
-  const bboxArr = bbox.split(',');
-
-  if (bboxArr.length === 4) {
-    // Optimize by unrolling the loop
-    bboxArr[0] = parseFloat(bboxArr[0], 10);
-    bboxArr[1] = parseFloat(bboxArr[1], 10);
-    bboxArr[2] = parseFloat(bboxArr[2], 10);
-    bboxArr[3] = parseFloat(bboxArr[3], 10);
-
-    if (!isNaN(bboxArr.reduce((a, b) => a + b))) {
-      query[field] = {
-        $geoWithin: {
-          $geometry: {
-            type: 'Polygon',
-            coordinates: [[
-              [bboxArr[0], bboxArr[1]],
-              [bboxArr[2], bboxArr[1]],
-              [bboxArr[2], bboxArr[3]],
-              [bboxArr[0], bboxArr[3]],
-              [bboxArr[0], bboxArr[1]],
-            ]],
-          },
-        },
-      };
-    }
-  }
-};
-
-module.exports.prototype.customNear = field => (query, point) => {
-  const pointArr = point.split(',').map(p => parseFloat(p, 10));
-
-  if (pointArr.length >= 2) {
-    if (!isNaN(pointArr.reduce((a, b) => a + b))) {
-      const max = pointArr[2];
-      const min = pointArr[3];
-
-      query[field] = {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: pointArr.splice(0, 2),
-          },
-        },
-      };
-
-      if (!isNaN(max)) {
-        query[field].$near.$maxDistance = max;
-
-        if (!isNaN(min)) {
-          query[field].$near.$minDistance = min;
-        }
-      }
-    }
-  }
 };
 
 function parseDate(value) {
@@ -120,7 +55,7 @@ module.exports.prototype.customAfter = field => (query, value) => {
 
   if (date.toString() !== 'Invalid Date') {
     query[field] = {
-      $gte: date.toISOString(),
+      ge: date.toISOString(),
     };
   }
 };
@@ -130,7 +65,7 @@ module.exports.prototype.customBefore = field => (query, value) => {
 
   if (date.toString() !== 'Invalid Date') {
     query[field] = {
-      $lt: date.toISOString(),
+      lt: date.toISOString(),
     };
   }
 };
@@ -145,8 +80,8 @@ module.exports.prototype.customBetween = field => (query, value) => {
 
   if (after.toString() !== 'Invalid Date' && before.toString() !== 'Invalid Date') {
     query[field] = {
-      $gte: after.toISOString(),
-      $lt: before.toISOString(),
+      ge: after.toISOString(),
+      lt: before.toISOString(),
     };
   }
 };
@@ -162,37 +97,29 @@ module.exports.prototype.parseString = function parseString(string, array) {
   switch (op) {
     case '!':
       if (array) {
-        ret.field = '$nin';
+        ret.field = 'not_contains'; // DynamodDB Documentation
+        // ret.field = 'not in'; // Dynamoose Documentation
       } else if (org === '') {
-        ret.field = '$exists';
+        ret.field = 'not_null'; // DynamodDB Documentation
+        // ret.field = 'not null'; // Dynamoose Documentation
         ret.value = false;
       } else {
-        ret.field = '$ne';
+        ret.field = 'ne'; // DynamodDB Documentation
+        // ret.field = 'not'; // Dynamoose Documentation
       }
       break;
     case '>':
-      ret.field = eq ? '$gte' : '$gt';
+      ret.field = eq ? 'ge' : 'gt';
       break;
     case '<':
-      ret.field = eq ? '$lte' : '$lt';
+      ret.field = eq ? 'le' : 'lt';
       break;
     case '^':
+      ret.field = 'begins_with'; // DynamodDB Documentation
+      // ret.field = 'beginsWith'; // Dynamoose Documentation
+      break;
     case '$':
-    case '~':
-      ret.field = '$regex';
-      ret.options = 'i';
-      ret.value = org.replace(this.valReqex, '');
-
-      switch (op) {
-        case '^':
-          ret.value = `^${val}`;
-          break;
-        case '$':
-          ret.value = `${val}$`;
-          break;
-        default:
-          break;
-      }
+      ret.field = 'contains'; // DynamodDB Documentation
       break;
     default:
       ret.org = org = op + org;
@@ -200,12 +127,13 @@ module.exports.prototype.parseString = function parseString(string, array) {
       ret.value = this.parseStringVal(org);
 
       if (array) {
-        ret.field = '$in';
+        ret.field = 'in';
       } else if (org === '') {
-        ret.field = '$exists';
+        ret.field = 'not_null'; // DynamodDB Documentation
+        // ret.field = 'not null'; // Dynamoose Documentation
         ret.value = true;
       } else {
-        ret.field = '$eq';
+        ret.field = 'eq';
       }
   }
 
@@ -276,7 +204,7 @@ module.exports.prototype.parse = function parse(query) {
 
     // array key
     if (val instanceof Array) {
-      if (this.ops.indexOf('$in') >= 0 && val.length > 0) {
+      if (this.ops.indexOf('in') >= 0 && val.length > 0) {
         res[key] = {};
 
         for (let i = 0; i < val.length; i += 1) {
@@ -284,21 +212,17 @@ module.exports.prototype.parse = function parse(query) {
             const parsed = this.parseString(val[i], true);
 
             switch (parsed.field) {
-              case '$in':
-              case '$nin':
+              case 'in':
+              case 'not_contains':
                 res[key][parsed.field] = res[key][parsed.field] || [];
                 res[key][parsed.field].push(parsed.value);
-                break;
-              case '$regex':
-                res[key].$regex = parsed.value;
-                res[key].$options = parsed.options;
                 break;
               default:
                 res[key][parsed.field] = parsed.value;
             }
           } else {
-            res[key].$in = res[key].$in || [];
-            res[key].$in.push(this.parseStringVal(val[i]));
+            res[key].in = res[key].in || [];
+            res[key].in.push(this.parseStringVal(val[i]));
           }
         }
       }
@@ -313,7 +237,7 @@ module.exports.prototype.parse = function parse(query) {
 
     // field exists query
     if (!val) {
-      res[key] = { $exists: true };
+      res[key] = { not_null: true };
 
     // query operators
     } else if (this.ops.indexOf(val[0]) >= 0) {
