@@ -133,9 +133,10 @@ Params is an object with URI query params and their values. Ex. `req.params`
 if you are working with ExpressJS.
 
 ```javascript
+var qs = require('dynamo-querystring');
 var query = qs.parse(req.params);
 
-mongo.collection('mycol').find(query, field).toArray(function(err, documents) {
+dynamoModel.query(query).toArray(function(err, documents) {
   // matching documents
 });
 ```
